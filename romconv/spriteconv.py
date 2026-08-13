@@ -137,7 +137,7 @@ def dump_c_source_4bpp(sprites, f):
 def parse_spritemap(id, fmt, infiles, outfile):
     sprites = []
 
-    if fmt == "frogger":
+    if fmt == "frogger" or fmt == "scramble":
         # frogger uses the tilemap roms for sprites as well
         spritemap_data = []
         for file in infiles:        
@@ -156,6 +156,8 @@ def parse_spritemap(id, fmt, infiles, outfile):
                 data.append(spritemap_data[i][32*sprite:32*(sprite+1)])
             
             sprites.append(parse_sprite_frogger(data))
+        
+        for s in range(len(sprites)): print(s); show_sprite(sprites[s])    
 
     # pacman, galaga and digdug
     elif fmt == "pacman" or fmt == "galaga" or fmt == "digdug":    
@@ -236,6 +238,7 @@ if len(sys.argv) < 5:
     print("  Pacman:     ", sys.argv[0], "pacman_sprites pacman ../roms/pacman.5f ../galagino/pacman_spritemap.h")
     print("  Donkey Kong:", sys.argv[0], "dkong_sprites dkong ../roms/l_4m_b.bin  ../roms/l_4n_b.bin  ../roms/l_4r_b.bin  ../roms/l_4s_b.bin ../galagino/dkong_spritemap.h")
     print("  Frogger:    ", sys.argv[0], "frogger_sprites frogger ../roms/frogger.606 ../roms/frogger.607 ../galagino/frogger_spritemap.h")
+    print("  Scramble:    ", sys.argv[0], "scramble_sprites scramble ./roms/c2.5f ../roms/c1.5h ../galagino/scramble_spritemap.h")
     print("  Digdug:     ", sys.argv[0], "digdug_sprites digdug ../roms/dd1.15 ../roms/dd1.14 ../roms/dd1.13 ../roms/dd1.12 ../galagino/digdug_spritemap.h")
     print("  1942:       ", sys.argv[0], "_1942_sprites 1942 ../roms/sr-14.l1 ../roms/sr-15.l2 ../roms/sr-16.n1 ../roms/sr-17.n2 ../galagino/1942_spritemap.h")
     exit(-1)

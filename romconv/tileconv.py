@@ -256,6 +256,7 @@ if len(sys.argv) != 3 and len(sys.argv) != 4 and len(sys.argv) != 8:
     print("  Digdug pf:  ", sys.argv[0], "../roms/dd1.11 ../galagino/digdug_pftiles.h")
     print("  1942 chars: ", sys.argv[0], "../roms/sr-02.f2 ../galagino/1942_charmap.h")
     print("  1942 tiles: ", sys.argv[0], "../roms/sr-08.a1 ../roms/sr-09.a2 ../roms/sr-10.a3 ../roms/sr-11.a4 ../roms/sr-12.a5 ../roms/sr-13.a6 ../galagino/1942_tilemap.h")
+    print("  Scramble:    ", sys.argv[0], "/roms/c2.5f ../roms/c1.5h ../galagino/scramble_tilemap.h")
     exit(-1)
 
 if len(sys.argv) == 8:

@@ -232,6 +232,7 @@ def dump_palette(id, outname, palette):
 
 if len(sys.argv) < 4 or len(sys.argv) == 5 or len(sys.argv) > 7:
     print("Usage:",sys.argv[0], "name <palettefiles> offset <tablefile> <outfile>")
+    print("  Scramble cmap: ", sys.argv[0], "scramble_colormap ../roms/c01s.6e ../galagino/scramble_cmap.h")
     print("  Galaga sprites:", sys.argv[0], "galaga_colormap_sprites ../roms/prom-5.5n 0 ../roms/prom-3.1c ../galagino/galaga_cmap_sprites.h")
     print("  Galaga tiles:  ", sys.argv[0], "galaga_colormap_tiles ../roms/prom-5.5n 16 ../roms/prom-4.2n ../galagino/galaga_cmap_tiles.h")
     print("  Pacman:        ", sys.argv[0], "pacman_colormap ../roms/82s123.7f 0 ../roms/82s126.4a ../galagino/pacman_cmap.h")

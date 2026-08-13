@@ -46,6 +46,19 @@ machines are to be emulated.
 ./z80patch.py
 ```
 
+## Scramble ROM conversion
+
+Scramble comes with code ROMs as well as ROMs containing graphic data,
+color tables and audio waveforms. These can be converted using the
+following commands:
+
+```
+./cmapconv.py scramble_colormap ../roms/c01s.6e ../galagino/scramble_cmap.h
+./romconv.py scramble_rom ../roms/s1.2d ../roms/s2.2e ../roms/s3.2f ../roms/s4.2h ../roms/s5.2j ../roms/s6.2l ../roms/s7.2m ../roms/s8.2p ../galagino/scramble_rom.h
+./spriteconv.py scramble_sprites scramble ../roms/c2.5f ../roms/c1.5h ../galagino/scramble_spritemap.h
+./tileconv.py ../roms/c2.5f ../roms/c1.5h ../galagino/scramble_tilemap.h
+```
+
 ## Pac-Man ROM conversion
 
 Pac-Man comes with code ROMs as well as ROMs containing graphic data,
