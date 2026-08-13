@@ -120,7 +120,7 @@ make
 
 # Should build now
 
-# Flash ~/build/Galapico.uf2 onto pico2 board usual way
+# Flash ~/galapico/build/Galapico.uf2 onto pico2 board usual way
                                                                                              
 
 
