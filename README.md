@@ -19,23 +19,26 @@ Instructions :
 
 #From terminal in Linux 
 
-#Install tools for raspberry pico from git
+# Install tools for raspberry pico from git
+
 sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
 
-#Install pico sdk from git
+#  Install pico sdk from git
+
 git clone https://github.com/raspberrypi/pico-sdk.git
 
 cd ~/pico-sdk
 
-#Install some additional modules from git
-git submodule update --init 
+# Install some additional modules from git
 
+git submodule update --init 
 
 export PICO_SDK_PATH=~/pico-sdk
 
 cd ~/
 
-#Download Scramble version of galapico from github
+# Download Scramble version of galapico from github
+
 git clone https://github.com/cmichelakis-max/galapico.git
 
 cd ~/galapico
@@ -54,20 +57,20 @@ cd ~/galapico/romconv
 # Must be the following set of files:
 # For older mame
 
- colour ROM
+# colour ROM
  c01s.6e
  
- graphics ROMS
+# graphics ROMS
  c1.5h
  c2.5f
  
- audio CPU ROMS
+# audio CPU ROMS
  ot1.5c
  ot2.5d
  ot3.5e
  
- main  CPU ROMS 
- s1.2d  
+# main  CPU ROMS 
+ s1.2d
  s2.2e
  s3.2f
  s4.2h
@@ -76,21 +79,21 @@ cd ~/galapico/romconv
  s7.2m
  s8.2p
 
-#for newer mame
+# for newer mame
 
- colour ROM
+ # colour ROM
  82s123.6e
  
- graphics ROMS
+ # graphics ROMS
  5f.k
  5h.k
   
- audio CPU ROMS
+ # audio CPU ROMS
  5c
  5d
  5e
  
- main  CPU ROMS 
+ # main  CPU ROMS 
  2d.k 
  2e.k
  2f.k 
@@ -100,9 +103,10 @@ cd ~/galapico/romconv
  2m.k
  2p.k
 
-#if using newer mame roms conv.sh script must be changed to suit the names
-#run conversion roms
+# if using newer mame roms conv.sh script must be changed to suit the names
+# run conversion roms
 chmod 777 ./conv.sh
+
 ./conv.sh
 
 cd ~/galapico/galagino
