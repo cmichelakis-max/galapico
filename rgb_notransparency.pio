@@ -29,7 +29,7 @@ colourout1:
 
 
 % c-sdk {
-    #include "galagino\config.h"
+    #include "galagino/config.h"
 
 static inline void rgb_notransparency_program_init(PIO pio, uint sm, uint offset, uint pin) {
 

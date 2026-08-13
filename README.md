@@ -1,43 +1,122 @@
-# Galapico - Pi Pico 2 Arcade Emulator
+# Adding Scramble game to Galapico - Pi Pico 2 Arcade Emulator
 
-https://www.youtube.com/watch?v=WvlSHfgt45Q
+This is a fork of https://github.com/Beaumotplage/galapico Pi Pico 2 Arcade Emulator
 
-This is a port of the excellent Galagino ESP32 emulator to the Pi Pico 2, with 15kHz outputs to a CRT TV/Monitor. 
+That is a port of the excellent Galagino ESP32 emulator to the Pi Pico 2, with 15kHz outputs to a CRT TV/Monitor. 
 See here for the Galagino emulator: https://github.com/harbaum/galagino
 
-This port is NOT by the original author, so please do not bother them with issues.
-The 'back-end' tile/sprite/video for this code differs a lot from Galagino, hence I've probably broken a few things.
-You will need to follow the same steps to find the ROMs, process them and then compile a .uf2 file to drop onto a Pi Pico2
-You will also need to install Vs Code and the Pi Pico plugin, then import the downloaded project and compile it (release, no debug).
+Issues :
+1. Graphics issues
+2. Scroll not working 
+3. Sound not implemented (2nd Z80 CPU)
+4. No stars in background
+5. DIP switches need addressing
+
+This is a SINGLE MACHINE build
+
+Instructions :
+#Tested on raspberry pi 5 running Linux  Trixie
+
+#From terminal in Linux 
+
+#Install tools for raspberry pico from git
+sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+
+#Install pico sdk from git
+git clone https://github.com/raspberrypi/pico-sdk.git
+
+cd ~/pico-sdk
+
+#Install some additional modules from git
+git submodule update --init 
 
 
-Issues (many)
-Does it compile for anyone other than me? Probably need a better readme/instructions.
+export PICO_SDK_PATH=~/pico-sdk
 
-Considerable code tidy-up needed. I threw it on GitHub prematurely, but needed to focus on other things in life.
-Digdug is running 1.5MHz CPUs to avoid overloading the Pico.
-Like galagino, the Z80 looks to be underclocked on some stuff - at least in 1942. 
-    Setting INST_PER_FRAME to 500000 cures this but will totally overload the Pico2.
-     I've resorted to individual INST_PER_FRAME for each game (config.h). 
-Frogger - leftmost tiles for scrolling items need sorting. Horrible audio squeal.
-Iffy sound generally. Donkey Kong needs to change sample rate, amongst other issues. 
-I might change the title menu to a text based one for various internal reasons.
-Donkey kong is off the side by 1 pixel (thought I'd sorted that ages ago).
+cd ~/
+
+#Download Scramble version of galapico from github
+git clone https://github.com/cmichelakis-max/galapico.git
+
+cd ~/galapico
+
+mkdir build
+
+cd build 
+
+cmake -DPICO_PLATFORM=rp2350-arm-s -DPICO_BOARD=pico2 ..
+
+cd ~/galapico/romconv
+
+# Download z80 emulator zip file from https://fms.komkon.org/EMUL8/Z80-081707.zip
+# into ~/roms directory
+# Search internet for scramble arcade ROMS 
+# Must be the following set of files:
+# For older mame
+
+ colour ROM
+ c01s.6e
+ 
+ graphics ROMS
+ c1.5h
+ c2.5f
+ 
+ audio CPU ROMS
+ ot1.5c
+ ot2.5d
+ ot3.5e
+ 
+ main  CPU ROMS 
+ s1.2d  
+ s2.2e
+ s3.2f
+ s4.2h
+ s5.2j
+ s6.2l
+ s7.2m
+ s8.2p
+
+#for newer mame
+
+ colour ROM
+ 82s123.6e
+ 
+ graphics ROMS
+ 5f.k
+ 5h.k
+  
+ audio CPU ROMS
+ 5c
+ 5d
+ 5e
+ 
+ main  CPU ROMS 
+ 2d.k 
+ 2e.k
+ 2f.k 
+ 2h.k
+ 2j.k
+ 2l.k 
+ 2m.k
+ 2p.k
+
+#if using newer mame roms conv.sh script must be changed to suit the names
+#run conversion roms
+chmod 777 ./conv.sh
+./conv.sh
+
+cd ~/galapico/galagino
+mv Z80.c z80.cpp 
+
+cd ~/galapico/build
+
+make
+
+# Should build now
+
+# Flash ~/build/Galapico.uf2 onto pico2 board usual way
+                                                                                             
 
 
-Instructions (WIP)
-Download the project from GIT
-Follow all Galagino instructions to obtain ROMs and run the python scripts to auto-generate source code from the ROMs.
-Rename z80.c to z80.cpp
 
-Install Vscode.
-Install the Raspberry Pi Pico Extension for VScode (find it using the Extensions in VScode).
-Go to the Pico extention and Import Project.
-Point it to the folder for the project.
-Set the sdk to 2.0.0 (I've not tried newer)
-Press Import and it should combine the GIT download with a compilable framework.
-Go to the Cmake settings (far left triangle panel). 
-In Configure, set the compiler to 'pico' in the Configure. If it's not there, something's gone wrong in the import.
-In Configure, set the build to Release, unless you really want to hook up a debugger to the Pico to step the code when developing.
-Build the project (View/command pallet/ build)
 

@@ -29,10 +29,10 @@ if(WIN32)
 else()
     set(USERHOME $ENV{HOME})
 endif()
-set(sdkVersion 2.0.0)
+set(sdkVersion 2.2.0)
 set(toolchainVersion 13_2_Rel1)
 set(picotoolVersion 2.0.0)
-include(${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+# not needed as building without vscode include(${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
 # ====================================================================================
 set(PICO_BOARD pico2 CACHE STRING "Board type")
 
@@ -50,7 +50,7 @@ pico_sdk_init()
 add_executable(Galapico 
     Main_galapico.cpp  
     hal_pwm_audio.cpp
-    hal_Video.cpp 
+    hal_video.cpp 
     galagino/i8048.cpp
     galagino/z80.cpp
     galagino/emulation.cpp)
@@ -62,7 +62,7 @@ pico_generate_pio_header(Galapico ${CMAKE_CURRENT_LIST_DIR}/csync.pio)
 
 
 pico_set_program_name(Galapico "Galapico")
-pico_set_program_version(Galapico "0.1")
+pico_set_program_version(Galapico "0.2")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(Galapico 0)

@@ -15,16 +15,20 @@
 
 
 #include "pc_or_rp2040.h"
-#include "galagino\config.h"
-#include "galagino\emulation.h"
+#include "galagino/config.h"
+#include "galagino/emulation.h"
 #include "galapico.h"
-#include "galagino\tileaddr.h"
+#include "galagino/tileaddr.h"
 
-#include "HAL_video.h"
-#include "HAL_pwm_audio.h"
+#include "hal_video.h"
+#include "hal_pwm_audio.h"
 #include "pico/multicore.h"
 #include "hardware/gpio.h"
 #include "hw_defs.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "pico/stdlib.h"
 
 struct sprite_S {
     unsigned char code, color, flags;
@@ -83,7 +87,7 @@ unsigned char grey[256] =
 
 // include converted rom data
 #ifdef ENABLE_PACMAN
-#include "galagino\pacman.h"
+#include "galagino/pacman.h"
 #endif
 
 #ifdef ENABLE_GALAGA
@@ -104,6 +108,10 @@ unsigned char grey[256] =
 
 #ifdef ENABLE_1942
 #include "galagino\1942.h"
+#endif
+
+#ifdef ENABLE_SCRAMBLE
+#include "galagino/scramble.h"
 #endif
 
 
@@ -293,9 +301,10 @@ void galapico_render_frame()
             }
         }
     }
-#endif
+// commented out #endif
 
     else
+#endif
     {
 #ifdef ENABLE_PACMAN
         PACMAN_BEGIN
@@ -332,6 +341,12 @@ void galapico_render_frame()
             _1942_render_frame_raster();
         _1942_END
 #endif
+#ifdef ENABLE_SCRAMBLE
+            //SCRAMBLE_BEGIN
+            scramble_render_frame_raster();
+            //SCRAMBLE_END
+#endif
+
     }
 }
 
@@ -671,6 +686,10 @@ void audio_init(void) {
 void galapico_update_screen(void) {
  // uint32_t t0 = micros();
 
+#ifdef ENABLE_SCRAMBLE
+   scramble_prepare_frame();
+#endif   
+
 #ifdef ENABLE_PACMAN
 PACMAN_BEGIN
   pacman_prepare_frame();    
@@ -712,6 +731,7 @@ void galapico_render_audio_video(void)
 {
   
     galapico_render_frame();
+#ifdef SOUND    // TODO IMPLEMENT SOUND
     audio_namco_waveregs_parse();
     snd_render_buffer();
     snd_render_buffer();
@@ -719,8 +739,8 @@ void galapico_render_audio_video(void)
     snd_render_buffer();
     snd_render_buffer();
     snd_render_buffer();
+#endif
 
-   
 #ifdef ENABLE_GALAGA
   /* the screen is only updated every second frame, scroll speed is thus doubled */
   static const signed char speeds[8] = { -1, -2, -3, 0, 3, 2, 1, 0 };
@@ -771,7 +791,14 @@ unsigned char buttons_get(void)
       (gpio_get(B_RIGHT1) ? 0 : BUTTON_RIGHT) |
       (gpio_get(B_UP1) ? 0 : BUTTON_UP) |
       (gpio_get(B_DOWN1) ? 0 : BUTTON_DOWN) |
+#ifndef ENABLE_SCRAMBLE
       (gpio_get(B_1P_1) ? 0 : BUTTON_FIRE);
+#endif
+#ifdef ENABLE_SCRAMBLE
+      (gpio_get(B_1P_1) ? 0 : BUTTON_FIRE) |
+      (gpio_get(B_1P_2) ? 0 : BUTTON_EXTRA);
+#endif
+ 
 
 }
 
@@ -793,7 +820,9 @@ void galapico_audio_poll(unsigned char* buffer, unsigned short* numsamples)
  */
 void galapico_prepare_emulation(void)
 {
+#ifdef SOUND // IMPLEMENT SOUND
     audio_init();
+#endif    
 
     prepare_emulation();
 }
@@ -811,8 +840,10 @@ void core1_main()
     // initialized to dkongs 11765hz)
 
     // Boot audio from this core (so interrups go to it)
+#ifdef  CMICH // TODO IMPLEMENT SOUND  
     hal_pwm_audio_init();
 
+#endif
 
     // Go to video loop
     Halvideo_core1();
@@ -864,12 +895,16 @@ int main()
     gpio_set_input_enabled(B_1P_2, true);
     gpio_pull_up(B_1P_2);
 
+ // Initialize stdio
+    stdio_init_all();
 
-    prepare_emulation(); 
 
+    prepare_emulation();   
+
+#ifdef SOUND // TODO IMPLEMENT SOUND 
     // Emulator code first
     audio_init();
-
+#endif
 
 	// Start the second CPU core (see above function)
     multicore_launch_core1(core1_main);
