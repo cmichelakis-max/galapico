@@ -29,8 +29,13 @@
 #ifdef ENABLE_1942
 #define RAMSIZE   (8192 + 1024 + 128)
 #else
+#ifdef  ENABLE_SCRAMBLE
+#define RAMSIZE   (20480)
+#else
 #define RAMSIZE   (8192)
 #endif
+#endif
+
 
 unsigned char game_ram[RAMSIZE];
 
@@ -60,6 +65,11 @@ unsigned char cs_ctrl = 0;
 int nmi_cnt = 0;
 int coincredMode = 0;   
 unsigned char starcontrol = 0;
+#endif
+
+#ifdef ENABLE_SCRAMBLE
+// special variables for pacman
+unsigned char irq_ptr = 0;
 #endif
 
 #ifdef ENABLE_PACMAN
@@ -241,6 +251,9 @@ unsigned char namco_read_dd(unsigned short Addr) {
 #include "1942.h"
 #endif
 
+#ifdef ENABLE_SCRAMBLE
+#include "scramble.h"
+#endif
 
 void OutZ80(unsigned short Port, unsigned char Value) {
 #ifdef ENABLE_PACMAN
@@ -296,6 +309,11 @@ void WrZ80(unsigned short Addr, unsigned char Value) {
   (*(wrz80[machine]))(Addr, Value);
   
 #else
+
+#ifdef ENABLE_SCRAMBLE
+    scramble_WrZ80(Addr, Value);
+    return; 
+#endif 
   // digdug is very timing critical and gets a special
   // treatment
 #ifdef ENABLE_DIGDUG
@@ -411,6 +429,10 @@ unsigned char RdZ80(unsigned short Addr) {
 #ifdef ENABLE_DIGDUG
   if(MACHINE_IS_DIGDUG) return digdug_RdZ80(Addr);
 #endif
+
+#ifdef ENABLE_SCRAMBLE
+   return scramble_RdZ80(Addr);
+#endif   
 
 #ifndef SINGLE_MACHINE
   switch(machine) {
@@ -643,6 +665,12 @@ void emulate_frame(void) {
   else
 #endif  
 
+#ifdef ENABLE_SCRAMBLE
+
+  scramble_run_frame();
+
+#endif
+
 #ifdef ENABLE_PACMAN
 PACMAN_BEGIN
   pacman_run_frame();
@@ -708,3 +736,33 @@ _1942_END
   }
 #endif  
 }
+
+#ifdef ENABLE_SCRAMBLE
+	// scramble protection code from old mame release
+	unsigned char scramblk_protection_r(void) 
+	{
+  
+  		switch (cpu[0].PC.W)	
+		{
+	   		case 0x00a8:         
+        			return 0xf0;
+	   		case 0x00be:      
+                		return 0xb0;
+	   		case 0x0c1d:      
+        			return 0xf0;
+     			case 0x0c6a:       
+          			return 0xb0;
+	   		case 0x0ceb:      
+         			return 0x40;
+	   		case 0x0d37:      
+          			return 0x60;
+	   		case 0x1ca2:      
+      				return 0x00;  /* I don't think it's checked */
+	   		case 0x1d7e:      
+        			return 0xb0;
+	      		default:
+		 		//logerror("%04x: read protection\n",cpu_get_pc());
+		 	return 0;
+		}	
+	} 				
+#endif

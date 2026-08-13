@@ -2,25 +2,27 @@
 #define _CONFIG_H_
 
 // disable e.g. if roms are missing
-#define ENABLE_PACMAN
-#define ENABLE_GALAGA
-#define ENABLE_DKONG
-#define ENABLE_FROGGER
-#define ENABLE_DIGDUG
-#define ENABLE_1942
+//#define ENABLE_PACMAN
+//#define ENABLE_GALAGA
+//#define ENABLE_DKONG
+//#define ENABLE_FROGGER
+//#define ENABLE_DIGDUG
+//#define ENABLE_1942
+#define ENABLE_SCRAMBLE
 
-#if !defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942)
+#if !defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942) && !defined(ENABLE_SCRAMBLE)
 #error "At least one machine has to be enabled!"
 #endif
 
 // check if only one machine is enabled
-#if (( defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942)) || \
-     (!defined(ENABLE_PACMAN) &&  defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942)) || \
-     (!defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) &&  defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942)) || \
-     (!defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) &&  defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942)) || \
-     (!defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) &&  defined(ENABLE_DIGDUG) && !defined(ENABLE_1942)) || \
-     (!defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) &&  defined(ENABLE_1942)))
-  #define SINGLE_MACHINE
+#if (( defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942) && !defined(ENABLE_SCRAMBLE)) || \
+     (!defined(ENABLE_PACMAN) &&  defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942) && !defined(ENABLE_SCRAMBLE)) || \
+     (!defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) &&  defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942) && !defined(ENABLE_SCRAMBLE)) || \
+     (!defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) &&  defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) && !defined(ENABLE_1942) && !defined(ENABLE_SCRAMBLE)) || \
+     (!defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) &&  defined(ENABLE_DIGDUG) && !defined(ENABLE_1942) && !defined(ENABLE_SCRAMBLE)) || \
+     (!defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) &&  defined(ENABLE_1942) && !defined(ENABLE_SCRAMBLE))  || \
+     (!defined(ENABLE_PACMAN) && !defined(ENABLE_GALAGA) && !defined(ENABLE_DKONG) && !defined(ENABLE_FROGGER) && !defined(ENABLE_DIGDUG) &&  !defined(ENABLE_1942) && defined(ENABLE_SCRAMBLE)))
+    #define SINGLE_MACHINE
 #endif
 
 // game config
@@ -43,5 +45,6 @@
 #define INST_PER_FRAME_FROGGER 300000/60/4
 #define INST_PER_FRAME_DIGDUG 150000/60/4
 #define INST_PER_FRAME_DKONG 300000/60/4
+#define INST_PER_FRAME_SCRAMBLE 300000/60/4
 
 #endif // _CONFIG_H_

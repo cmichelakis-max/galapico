@@ -1,6 +1,6 @@
 #ifndef _EMULATION_H_
 #define _EMULATION_H_
-#include "..\picostubs.h" // TODO: Try to remove me
+#include "../picostubs.h" // TODO: Try to remove me
 #ifdef ENABLE_DKONG
 #define DKONG_AUDIO_QUEUE_LEN   16
 #define DKONG_AUDIO_QUEUE_MASK (DKONG_AUDIO_QUEUE_LEN-1)
@@ -175,7 +175,7 @@ extern char game_started;
 #ifdef ENABLE_GALAGA
 extern unsigned char starcontrol;
 #endif
-#if defined(ENABLE_GALAGA) || defined(ENABLE_PACMAN) || defined(ENABLE_DIGDUG)
+#if defined(ENABLE_GALAGA) || defined(ENABLE_PACMAN) || defined(ENABLE_DIGDUG) || defined(ENABLE_SCRAMBLE)
 extern unsigned char soundregs[32];
 #endif
 #ifndef SINGLE_MACHINE
@@ -209,6 +209,9 @@ extern unsigned char buttons_get(void);
 
 /* ------------------ the following is used inside Z80.c ----------------- */
 extern char current_cpu;
+#ifdef ENABLE_SCRAMBLE
+extern const unsigned char scramble_rom[];
+#endif
 #ifdef ENABLE_PACMAN
 extern const unsigned char pacman_rom[];
 #endif
@@ -256,6 +259,9 @@ static inline byte OpZ80_INL(register word Addr) {
 #endif
 #ifdef ENABLE_PACMAN 
     { pacman_rom, NONE, NONE } ROM_ENDL
+#endif
+#ifdef ENABLE_SCRAMBLE
+    { scramble_rom, NONE, NONE } ROM_ENDL
 #endif
 #ifdef ENABLE_GALAGA
     { galaga_rom_cpu1, galaga_rom_cpu2, galaga_rom_cpu3 } ROM_ENDL
