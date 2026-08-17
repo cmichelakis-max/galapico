@@ -98,7 +98,7 @@ write
 
 extern unsigned char scramblk_protection_r(void);
 
-//#define SCROLL_ON
+#define SCROLL_ON
 
 #ifdef CPU_EMULATION
 #include "scramble_rom.h"
@@ -440,7 +440,7 @@ static inline void scramble_render_tile_raster(unsigned short chunk)
 		//get scroll info for this row
         // Addres is 0x5000-0x4000 SEE MEMORY MAP		  
         unsigned char scroll = memory[0x1000 + 2 * (row - 2)];        
-        scroll = ((scroll << 4) & 0xf0) | ((scroll >> 4) & 0x0f);        
+        //scroll = ((scroll << 4) & 0xf0) | ((scroll >> 4) & 0x0f);        
                 
         if (scroll == 0) // no scroll in this line?
         {			 
@@ -450,7 +450,7 @@ static inline void scramble_render_tile_raster(unsigned short chunk)
                 unsigned short addr = tileaddr[row][(TV_HEIGHT / CHUNKSIZE) - col - 1];
 
               
-                const unsigned short* tile = c2_5f[memory[0x0800 + addr]]; // from scramble_tilemap.h
+                const unsigned short* tile = c2_5f[memory[0x0800 + addr] & 0x7FF]; // from scramble_tilemap.h
                           
                 
 				// Addres is 0x5000-0x4000 SEE MEMORY MAP                
@@ -504,14 +504,27 @@ static inline void scramble_render_tile_raster(unsigned short chunk)
 				// Addres is 0x4800-0x4000 SEE MEMORY MAP  (Video RAM)
                 const unsigned char chr = memory[0x0800 + addr];
                 
-                const unsigned short* tile = c2_5f[chr]; // from scramble_tilemap.h
+                const unsigned short* tile = c2_5f[chr & 0x7FF]; // from scramble_tilemap.h
                 
 
                 // Addres is 0x5000-0x4000 SEE MEMORY MAP                
                 int c = memory[0x1000 + 2 * (addr & 31) + 1] & 7;
                 const unsigned short* colors = scramble_colormap[c];            
               
-                unsigned short* ptr = frame_buffer +(-TV_WIDTH*(sub))+8 * (row+(TV_WIDTH * col)); // this ooes not go past  white squares (from frogger.h) 
+				int offset = (-TV_WIDTH*(sub))+8 * (row+(TV_WIDTH * col)); // this ooes not go past  white squares (from frogger.h) 
+				
+				if (offset < 0)
+				{
+					offset = 0;
+				}
+				if (offset >= (TV_WIDTH * TV_HEIGHT)-1)
+				{
+					offset = (TV_WIDTH * TV_HEIGHT)-1;
+				}
+
+				unsigned short* ptr = frame_buffer + offset; // this ooes not go past  white squares (from frogger.h) 
+				
+                //unsigned short* ptr = frame_buffer +(-TV_WIDTH*(sub))+8 * (row+(TV_WIDTH * col)); // this ooes not go past  white squares (from frogger.h) 
 				
 				 
                 // 8 pixel rows per tile

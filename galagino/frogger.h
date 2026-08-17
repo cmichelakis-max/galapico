@@ -223,6 +223,9 @@ static inline void frogger_run_frame(void) {
 #include "frogger_spritemap.h"
 #include "frogger_cmap.h"
 
+
+#define   CHUNKSIZE (8)
+
 static inline void frogger_prepare_frame(void) {
   active_sprites = 0;
   // frogger supports a total of 8 sprites of 8x8 size
@@ -428,7 +431,7 @@ static inline void frogger_render_tile_raster(unsigned short chunk)
             {
                 unsigned short addr = tileaddr[row][(TV_HEIGHT / CHUNKSIZE) - col - 1];
 
-                const unsigned short* tile = frogger_606[memory[0x0800 + addr]];
+                const unsigned short* tile = frogger_606[memory[0x0800 + addr] & 0x7FF];
 
                 // frogger has a very reduced color handling
                 int c = memory[0xc00 + 2 * (addr & 31) + 1] & 7;
@@ -488,7 +491,7 @@ static inline void frogger_render_tile_raster(unsigned short chunk)
                 }
 
                 const unsigned char chr = memory[0x0800 + addr];
-                const unsigned short* tile = frogger_606[chr];
+                const unsigned short* tile = frogger_606[chr & 0x7FF];
 
                 // frogger has a very reduced color handling
                 int c = memory[0xc00 + 2 * (addr & 31) + 1] & 7;
@@ -498,7 +501,18 @@ static inline void frogger_render_tile_raster(unsigned short chunk)
 //                unsigned short* ptr = frame_buffer + 8 * col + sub;
                 
 //                unsigned short* ptr = frame_buffer + 8 * ( (TV_WIDTH * col + sub)); // was column
-                unsigned short* ptr = frame_buffer +(-TV_WIDTH*(sub))+8 * (row+(TV_WIDTH * col)); // was column
+				        int offset = (-TV_WIDTH*(sub))+8 * (row+(TV_WIDTH * col)); // this ooes not go past  white squares (from frogger.h) 
+				
+				        if (offset < 0)
+				        {
+					          offset = 0;
+				        }
+				        if (offset >= (TV_WIDTH * TV_HEIGHT)-1)
+				        {
+					          offset = (TV_WIDTH * TV_HEIGHT)-1;
+				        }
+
+				        unsigned short* ptr = frame_buffer + offset; 
 
                 // 8 pixel rows per tile
                 for (char r = 0; r < 8; r++, ptr += (TV_WIDTH - 8)) {
