@@ -99,7 +99,7 @@ unsigned char grey[256] =
 #endif
 
 #ifdef ENABLE_FROGGER
-#include "galagino\frogger.h"
+#include "galagino/frogger.h"
 #endif
 
 #ifdef ENABLE_DIGDUG
