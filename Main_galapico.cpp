@@ -91,11 +91,11 @@ unsigned char grey[256] =
 #endif
 
 #ifdef ENABLE_GALAGA
-#include "galagino\galaga.h"
+#include "galagino/galaga.h"
 #endif
 
 #ifdef ENABLE_DKONG
-#include "galagino\dkong.h"
+#include "galagino/dkong.h"
 #endif
 
 #ifdef ENABLE_FROGGER
@@ -103,11 +103,11 @@ unsigned char grey[256] =
 #endif
 
 #ifdef ENABLE_DIGDUG
-#include "galagino\digdug.h"
+#include "galagino/digdug.h"
 #endif
 
 #ifdef ENABLE_1942
-#include "galagino\1942.h"
+#include "galagino/1942.h"
 #endif
 
 #ifdef ENABLE_SCRAMBLE
