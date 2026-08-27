@@ -437,7 +437,7 @@ static inline void scramble_render_tile_raster(unsigned short chunk)
     for (int row = 0; row < GAME_WIDTH/8 -2 ; row++)
     {        
        
-		//get scroll info for this row
+	// get scroll info for this row
         // Addres is 0x5000-0x4000 SEE MEMORY MAP		  
         unsigned char scroll = memory[0x1000 + 2 * (row - 2)];        
         //scroll = ((scroll << 4) & 0xf0) | ((scroll >> 4) & 0x0f);        
@@ -453,7 +453,7 @@ static inline void scramble_render_tile_raster(unsigned short chunk)
                 const unsigned short* tile = c2_5f[memory[0x0800 + addr] & 0x7FF]; // from scramble_tilemap.h
                           
                 
-				// Addres is 0x5000-0x4000 SEE MEMORY MAP                
+                // Addres is 0x5000-0x4000 SEE MEMORY MAP                
                 int c = memory[0x1000 + 2 * (addr & 31) + 1] & 7;
                 const unsigned short* colors = scramble_colormap[c];
                 
@@ -501,7 +501,7 @@ static inline void scramble_render_tile_raster(unsigned short chunk)
                    
                 }
 
-				// Addres is 0x4800-0x4000 SEE MEMORY MAP  (Video RAM)
+                // Addres is 0x4800-0x4000 SEE MEMORY MAP  (Video RAM)
                 const unsigned char chr = memory[0x0800 + addr];
                 
                 const unsigned short* tile = c2_5f[chr & 0x7FF]; // from scramble_tilemap.h
@@ -511,18 +511,21 @@ static inline void scramble_render_tile_raster(unsigned short chunk)
                 int c = memory[0x1000 + 2 * (addr & 31) + 1] & 7;
                 const unsigned short* colors = scramble_colormap[c];            
               
-				int offset = (-TV_WIDTH*(sub))+8 * (row+(TV_WIDTH * col)); // this ooes not go past  white squares (from frogger.h) 
+                int offset = (-TV_WIDTH*(sub))+8 * (row+(TV_WIDTH * col)); // this ooes not go past  white squares (from frogger.h) 
 				
-				if (offset < 0)
-				{
-					offset = 0;
-				}
-				if (offset >= (TV_WIDTH * TV_HEIGHT)-1)
-				{
-					offset = (TV_WIDTH * TV_HEIGHT)-1;
-				}
+                if (offset < 0)
+                {
+                     offset = 0;
+                }
+                if (offset >= (TV_WIDTH * TV_HEIGHT)-1)
+                {
+                     offset = (TV_WIDTH * TV_HEIGHT)-1;
+                }
 
-				unsigned short* ptr = frame_buffer + offset; // this ooes not go past  white squares (from frogger.h) 
+                unsigned short* ptr = frame_buffer + offset + (3*8);   // Fiddling 3*8 works but graphics issues on line 0 or 1 ? at startup and during game ?
+                                                                       // This fixes scrolling image lifted by 3 lines from bottom caused by scroll fix .
+								       // No collision was detected on landscape as game had lost where the space ship was
+                                                                       // relative to the landscape .
 				
                 //unsigned short* ptr = frame_buffer +(-TV_WIDTH*(sub))+8 * (row+(TV_WIDTH * col)); // this ooes not go past  white squares (from frogger.h) 
 				
