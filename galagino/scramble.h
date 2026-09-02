@@ -275,6 +275,11 @@ static inline void scramble_WrZ80(unsigned short Addr, unsigned char Value) {
 	{		
 		irq_enable[0] = Value & 1;
 	}
+	
+	if (Addr == 0x6804) // Stars enable
+	{
+		stars_enabled = Value & 1;
+	}        
 
 	return;	
 
@@ -341,6 +346,24 @@ struct SPRITE
 } - sizeof(SPRITE) is 4 bytes
 */ 
 
+static unsigned char stars_init_flag = false;
+
+// Starfield
+void stars_init(void);
+static constexpr unsigned short SCRAMBLE_MAX_STARS = 256;
+struct star_entry {
+    unsigned char x;       // 0-255 horizontal position (landscape)
+    unsigned char y;       // 0-255 vertical position (landscape)
+    unsigned short color;  // RGB565 byte-swapped
+};
+
+star_entry stars[SCRAMBLE_MAX_STARS];
+
+int star_count = 0;
+int stars_frame_counter = 0;
+int stars_index = 2;
+
+
 static inline void scramble_prepare_frame(void) {
 	// Do all the preparations to render a screen.
 
@@ -375,6 +398,14 @@ static inline void scramble_prepare_frame(void) {
 			sprite[active_sprites++] = spr;
     		
 	}
+	
+	if (stars_init_flag == false)
+	{
+	    stars_init();
+	    stars_init_flag = true;
+	}    
+	
+	
 	
 }
 
@@ -642,6 +673,79 @@ static void scramble_render_bullets_raster()
 	
 }
 
+extern unsigned char stars_enabled;
+
+void scramble_render_stars(void)
+{ 
+  
+  if (stars_enabled) 
+  {
+    for (int row = 0; row < GAME_WIDTH / 8; row++)
+    {
+	for (int star_cntr = 0; star_cntr < 256; star_cntr++)
+	{
+
+		struct star_entry *s = stars + star_cntr;
+
+		unsigned short x = (244 - s->x) & 0xff;
+		unsigned short y = (s->y & 0xff) + 16 - row * 8;
+
+		if (y < 8 && x < 224)
+		{
+			frame_buffer[y + 8 * row + (x * TV_WIDTH) +CRT_ROW_OFFSET] = s->color;
+		}			
+	}
+    }
+  }
+  
+}  
+
+// Convert 8-bit R,G,B to RGB565 byte-swapped for ESP32 SPI
+inline unsigned short rgb_to_swapped565(unsigned char r, unsigned char g, unsigned char b) {
+  unsigned short c = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+  return (c >> 8) | (c << 8);  // byte-swap
+}
+
+void stars_init(void) {
+  // MAME algorithm: 17-bit LFSR, period 2^17-1 = 131071
+  // Stars visible when upper 8 bits == 0xFF and bit 0 == 0
+  // Color from bits 3-8 (6-bit, 64 colors)
+  static const unsigned char starmap[4] = { 0, 150, 200, 255 };
+
+  unsigned short star_color_lut[64];
+  for(int i = 0; i < 64; i++) {
+    unsigned char r = starmap[((i >> 4) & 2) | ((i >> 5) & 1)];
+    unsigned char g = starmap[((i >> 2) & 2) | ((i >> 3) & 1)];
+    unsigned char b = starmap[((i >> 0) & 2) | ((i >> 1) & 1)];
+    star_color_lut[i] = rgb_to_swapped565(r, g, b);
+  }
+
+  // Run the LFSR and collect visible stars
+  star_count = 0;
+  uint32_t shiftreg = 0;
+  for(int i = 0; i < 131071 && star_count < SCRAMBLE_MAX_STARS; i++) {
+    if((shiftreg & 0x1fe01) == 0x1fe00) {
+      int color_idx = (~shiftreg >> 3) & 0x3f;
+      int x = (i % 512) / 2;
+      int y = i / 512;
+
+      if((y ^ (x >> 3)) & 1) {
+        int gx = 255 - y;
+        int gy = x + 16;
+
+        if(gx >= 0 && gx < 224 && gy >= 16 && gy < 288) {
+          stars[star_count].x = gx;
+          stars[star_count].y = gy;
+          stars[star_count].color = star_color_lut[color_idx];
+          star_count++;
+        }
+      }
+    }
+    shiftreg = (shiftreg >> 1) | ((((shiftreg >> 12) ^ ~shiftreg) & 1) << 16);
+  }
+}
+
+
 static inline void scramble_render_frame_raster()
 {
 
@@ -663,7 +767,14 @@ static inline void scramble_render_frame_raster()
 		for (int x = 0; x < TV_WIDTH * CHUNKSIZE; x++)
 		{
 			store[x] = 0;
-		}		
+		}
+	}
+		
+		
+	scramble_render_stars();
+	
+	for (int chunk = 0; chunk < TV_HEIGHT / CHUNKSIZE; chunk++)
+	{
 	
 		scramble_render_tile_raster(chunk);		
 		scramble_render_sprite_raster(chunk);		

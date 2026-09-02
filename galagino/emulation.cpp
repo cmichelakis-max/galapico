@@ -68,8 +68,9 @@ unsigned char starcontrol = 0;
 #endif
 
 #ifdef ENABLE_SCRAMBLE
-// special variables for pacman
+// special variables for scramble
 unsigned char irq_ptr = 0;
+unsigned char stars_enabled = 0;
 #endif
 
 #ifdef ENABLE_PACMAN
