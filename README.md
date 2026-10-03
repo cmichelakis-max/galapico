@@ -52,25 +52,25 @@ cmake -DPICO_PLATFORM=rp2350-arm-s -DPICO_BOARD=pico2 ..
 
 cd ~/galapico/romconv
 
-# Download z80 emulator zip file from https://fms.komkon.org/EMUL8/Z80-081707.zip
-# into ~/roms directory
-# Search internet for scramble arcade ROMS 
-# Must be the following set of files:
-# For older mame
+Download z80 emulator zip file from https://fms.komkon.org/EMUL8/Z80-081707.zip
+into ~/roms directory
+Search internet for scramble arcade ROMS 
+Must be the following set of files:
+For older mame
 
-# colour ROM
+ colour ROM
  c01s.6e
  
-# graphics ROMS
+graphics ROMS
  c1.5h
  c2.5f
  
-# audio CPU ROMS
+audio CPU ROMS
  ot1.5c
  ot2.5d
  ot3.5e
  
-# main  CPU ROMS 
+main  CPU ROMS 
  s1.2d
  s2.2e
  s3.2f
@@ -80,21 +80,21 @@ cd ~/galapico/romconv
  s7.2m
  s8.2p
 
-# for newer mame
+for newer mame
 
- # colour ROM
+colour ROM
  82s123.6e
  
- # graphics ROMS
+graphics ROMS
  5f.k
  5h.k
   
- # audio CPU ROMS
+audio CPU ROMS
  5c
  5d
  5e
  
- # main  CPU ROMS 
+main  CPU ROMS 
  2d.k 
  2e.k
  2f.k 
