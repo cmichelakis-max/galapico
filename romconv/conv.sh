@@ -30,7 +30,8 @@ echo "Colormaps"
 #./logoconv.py ../logos/1942.png ../galagino/1942_logo.h
 
 echo "CPU code"
-./romconv.py scramble_rom ../roms/s1.2d ../roms/s2.2e ../roms/s3.2f ../roms/s4.2h ../roms/s5.2j ../roms/s6.2l ../roms/s7.2m ../roms/s8.2p ../galagino/scramble_rom.h
+./romconv.py scramble_rom_cpu1 ../roms/s1.2d ../roms/s2.2e ../roms/s3.2f ../roms/s4.2h ../roms/s5.2j ../roms/s6.2l ../roms/s7.2m ../roms/s8.2p ../galagino/scramble_rom1.h
+./romconv.py scramble_rom_cpu2 ../roms/ot1.5c ../roms/ot2.5d ../roms/ot3.5e ../galagino/scramble_rom2.h
 #./romconv.py -p galaga_rom_cpu1 ../roms/gg1_1b.3p ../roms/gg1_2b.3m ../roms/gg1_3.2m ../roms/gg1_4b.2l ../galagino/galaga_rom1.h
 #./romconv.py galaga_rom_cpu2 ../roms/gg1_5b.3f ../galagino/galaga_rom2.h
 #./romconv.py galaga_rom_cpu3 ../roms/gg1_7b.2c ../galagino/galaga_rom3.h
