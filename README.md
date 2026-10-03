@@ -104,8 +104,8 @@ main  CPU ROMS
  2m.k
  2p.k
 
-# if using newer mame roms conv.sh script must be changed to suit the names
-# run conversion roms
+if using newer mame roms conv.sh script must be changed to suit the names
+run conversion script for roms
 chmod 777 ./conv.sh
 
 ./conv.sh
@@ -117,9 +117,9 @@ cd ~/galapico/build
 
 make
 
-# Should build now
+Should build now
 
-# Flash ~/galapico/build/Galapico.uf2 onto pico2 board usual way
+Flash ~/galapico/build/Galapico.uf2 onto pico2 board usual way
                                                                                              
 
 
