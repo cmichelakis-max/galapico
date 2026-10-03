@@ -30,7 +30,7 @@
 #define RAMSIZE   (8192 + 1024 + 128)
 #else
 #ifdef  ENABLE_SCRAMBLE
-#define RAMSIZE   (20480)
+#define RAMSIZE   (32768)
 #else
 #define RAMSIZE   (8192)
 #endif
@@ -96,6 +96,13 @@ unsigned char frogger_snd_ay_port;
 unsigned long frogger_snd_icnt;
 #endif
 
+#ifdef ENABLE_SCRAMBLE
+unsigned char scramble_snd_irq_state = 0;
+unsigned char scramble_snd_command;
+unsigned char scramble_snd_ay_port;
+unsigned long scramble_snd_icnt;
+#endif
+
 #ifdef ENABLE_DIGDUG
 unsigned char namco_command = 0;
 unsigned char namco_mode = 0;
@@ -122,7 +129,7 @@ unsigned long master_attract_timeout = 0;
 
 #endif
 
-#if defined(ENABLE_PACMAN) || defined(ENABLE_GALAGA) || defined(ENABLE_FROGGER) || defined(ENABLE_DIGDUG) || defined(ENABLE_1942)
+#if defined(ENABLE_PACMAN) || defined(ENABLE_GALAGA) || defined(ENABLE_FROGGER) || defined(ENABLE_DIGDUG) || defined(ENABLE_1942) || defined(ENABLE_SCRAMBLE)
 // mirror of sounds registers
 unsigned char soundregs[32] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -270,6 +277,11 @@ void OutZ80(unsigned short Port, unsigned char Value) {
     return;
   }
 #endif
+#ifdef ENABLE_SCRAMBLE  
+    scramble_OutZ80(Port, Value);
+    return;
+  
+#endif
 }
   
 unsigned char InZ80(unsigned short Port) {
@@ -277,9 +289,13 @@ unsigned char InZ80(unsigned short Port) {
   if(MACHINE_IS_FROGGER)
     return frogger_InZ80(Port);
 #endif
+#ifdef ENABLE_SCRAMBLE  
+    return scramble_InZ80(Port);
+#endif
 
  return 0; 
 }
+
 
 // Memory write -- write the Value to memory location Addr
 void WrZ80(unsigned short Addr, unsigned char Value) {

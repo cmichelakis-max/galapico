@@ -164,6 +164,12 @@ enum {
   #endif
 #endif
 
+#ifdef ENABLE_SCRAMBLE
+  #ifdef SINGLE_MACHINE
+    #define MACHINE_IS_SCRAMBLE  1
+  #endif
+#endif
+
 #if defined(__cplusplus)
 extern "C"
 {
@@ -210,7 +216,8 @@ extern unsigned char buttons_get(void);
 /* ------------------ the following is used inside Z80.c ----------------- */
 extern char current_cpu;
 #ifdef ENABLE_SCRAMBLE
-extern const unsigned char scramble_rom[];
+extern const unsigned char scramble_rom_cpu1[];
+extern const unsigned char scramble_rom_cpu2[];
 #endif
 #ifdef ENABLE_PACMAN
 extern const unsigned char pacman_rom[];
@@ -261,7 +268,7 @@ static inline byte OpZ80_INL(register word Addr) {
     { pacman_rom, NONE, NONE } ROM_ENDL
 #endif
 #ifdef ENABLE_SCRAMBLE
-    { scramble_rom, NONE, NONE } ROM_ENDL
+    { scramble_rom_cpu1, scramble_rom_cpu2, NONE } ROM_ENDL   
 #endif
 #ifdef ENABLE_GALAGA
     { galaga_rom_cpu1, galaga_rom_cpu2, galaga_rom_cpu3 } ROM_ENDL

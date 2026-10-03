@@ -2,9 +2,8 @@
 /* TODO LIST 
 1. Graphics issues 
 2. Scroll not working
-3. Sound not implemented (2nd Z80 CPU)
-4. No stars in background
-5. DIP switches need addressing
+3. Stars not blinking
+4. DIP switches need addressing
 */ 
 
 //https://github.com/ScottTunstall/Scramble
@@ -96,12 +95,128 @@ write
 80      8910 #1  write
 */
 
+/*
+# colour ROM
+ c01s.6e
+ 
+# graphics ROMS
+ c1.5h
+ c2.5f
+ 
+# audio CPU ROMS
+ ot1.5c
+ ot2.5d
+ ot3.5e
+ 
+# main  CPU ROMS 
+ s1.2d
+ s2.2e
+ s3.2f
+ s4.2h
+ s5.2j
+ s6.2l
+ s7.2m
+ s8.2p
+*/
+
 extern unsigned char scramblk_protection_r(void);
 
 #define SCROLL_ON
 
 #ifdef CPU_EMULATION
-#include "scramble_rom.h"
+#include "scramble_rom1.h"
+#include "scramble_rom2.h"
+
+unsigned char sound_latch;
+unsigned char snd_irq_state;
+unsigned char snd_irq_last = 0;   
+unsigned long snd_icnt = 0;
+
+static constexpr unsigned short CPU1_ROM_SIZE    = 0x4000;
+static constexpr unsigned short CPU2_ROM_SIZE    = 0x2000;
+
+static constexpr unsigned short CPU1_RAM_ADDR    = 0x4000;
+static constexpr unsigned short CPU1_VRAM_ADDR   = 0x4800;
+static constexpr unsigned short CPU1_ATTR_ADDR   = 0x5000;
+static constexpr unsigned short CPU1_SPRITE_ADDR = 0x5040;
+static constexpr unsigned short CPU1_BULLET_ADDR = 0x5060;
+static constexpr unsigned short CPU1_RAM2_ADDR   = 0x5080;
+
+static constexpr unsigned short CPU1_RAM_SIZE    = 0x0800;
+static constexpr unsigned short CPU1_VRAM_SIZE   = 0x0400;
+static constexpr unsigned short CPU1_ATTR_SIZE   = 0x0040;
+static constexpr unsigned short CPU1_SPRITE_SIZE = 0x0020;
+static constexpr unsigned short CPU1_BULLET_SIZE = 0x0020;
+static constexpr unsigned short CPU1_RAM2_SIZE   = 0x0080;
+static constexpr unsigned short CPU1_RAM_OFFSET    = 0x0000;
+static constexpr unsigned short CPU1_VRAM_OFFSET   = CPU1_RAM_OFFSET    + CPU1_RAM_SIZE;
+static constexpr unsigned short CPU1_ATTR_OFFSET   = CPU1_VRAM_OFFSET   + CPU1_VRAM_SIZE;
+static constexpr unsigned short CPU1_SPRITE_OFFSET = CPU1_ATTR_OFFSET   + CPU1_ATTR_SIZE;
+static constexpr unsigned short CPU1_BULLET_OFFSET = CPU1_SPRITE_OFFSET + CPU1_SPRITE_SIZE;
+static constexpr unsigned short CPU1_RAM2_OFFSET   = CPU1_BULLET_OFFSET + CPU1_BULLET_SIZE;
+static constexpr unsigned short CPU1_MEM_FREE      = CPU1_RAM2_OFFSET   + CPU1_RAM2_SIZE;
+
+static constexpr unsigned short CPU2_RAM_ADDR      = 0x8000;
+static constexpr unsigned short CPU2_RAM_SIZE      = 0x1000;
+static constexpr unsigned short CPU2_RAM_OFFSET    = CPU1_MEM_FREE;
+static constexpr unsigned short CPU2_MEM_FREE      = CPU2_RAM_OFFSET    + CPU2_RAM_SIZE;
+static constexpr unsigned short CPU2_FILTER_ADDR   = 0x9000; // hardware sound filter, not RAM
+static constexpr unsigned short CPU2_FILTER_SIZE   = 0x1000;
+
+unsigned char scramble_InZ80(unsigned short Port) {
+  static const unsigned char _timer[10] = {
+    0x00, 0x10, 0x20, 0x30, 0x40, 0x90, 0xa0, 0xb0, 0xa0, 0xd0
+  };
+
+ if(current_cpu == 1) {
+  // AY2_PORTB - timer
+  switch (Port & 0xff) 
+  {
+    case 0x20: //AY1_DATA
+      if (scramble_snd_ay_port < 14)
+        return soundregs[0x00 + scramble_snd_ay_port];
+      break;
+    case 0x80: //AY2_DATA
+      if (scramble_snd_ay_port < 14)
+        return soundregs[0x10 + scramble_snd_ay_port];
+      // AY2_PORTA - sound_latch
+      if (scramble_snd_ay_port == 14)
+        return sound_latch;
+      // Port B = timer: LS90 bi-quinary counter, divide-by-5120
+      if (scramble_snd_ay_port == 15) {
+        // MAME: scramble_timer[(total_cycles / 512) % 10]
+        return _timer[(scramble_snd_icnt / 40) % 10];
+      }
+      break;
+  }
+ } 
+  return 0x00;
+}
+
+void scramble_OutZ80(unsigned short Port, unsigned char Value) {
+  if(current_cpu == 1)
+  {
+   switch (Port & 0xff) 
+   {
+    case 0x10: //AY1_ADDR
+      scramble_snd_ay_port = Value & 0x0f;
+      return;
+    case 0x20: //AY1_DATA
+      if (scramble_snd_ay_port < 14)
+        soundregs[0x00 + scramble_snd_ay_port] = Value;
+      return;
+    case 0x40: //AY2_ADDR
+      scramble_snd_ay_port = Value & 0x0f;
+      return;
+    case 0x80: //AY2_DATA
+      if (scramble_snd_ay_port < 14)
+        soundregs[0x10 + scramble_snd_ay_port] = Value;
+      return;
+  }
+ }
+}
+
+
 
 static inline unsigned char scramble_RdZ80(unsigned short Addr) {
 		
@@ -110,8 +225,11 @@ static inline unsigned char scramble_RdZ80(unsigned short Addr) {
 	#if 0
 	Addr &= 0x7fff;   // a15 is unused
 	#endif
-	if (Addr < 16384)
-		return scramble_rom[Addr];
+	
+       if(current_cpu == 0) 
+       {	
+	  if (Addr < 16384)
+		return scramble_rom_cpu1[Addr];
 
 
     // easier ranges
@@ -191,14 +309,26 @@ static inline unsigned char scramble_RdZ80(unsigned short Addr) {
 		}
 	
    
+  }
+  else 
+  {
+    if (Addr < CPU2_ROM_SIZE)
+      return scramble_rom_cpu2[Addr];
 
+    if (Addr >= CPU2_RAM_ADDR && Addr < CPU2_RAM_ADDR + CPU2_RAM_SIZE)
+      return memory[CPU2_RAM_OFFSET + Addr - CPU2_RAM_ADDR];
+  }
 	return 0xff;
 }
 
 static inline void scramble_WrZ80(unsigned short Addr, unsigned char Value) {
-	Addr &= 0x7fff;   // a15 is unused
 
-    
+    #if 0	
+	Addr &= 0x7fff;   // a15 is unused
+    #endif	
+
+ if (current_cpu == 0) 
+ {   
 	if ((Addr & 0xf000) == 0x4000) 
 	{	
 	    
@@ -274,37 +404,83 @@ static inline void scramble_WrZ80(unsigned short Addr, unsigned char Value) {
 	if (Addr == 0x6801)
 	{		
 		irq_enable[0] = Value & 1;
+		return;
 	}
 	
 	if (Addr == 0x6804) // Stars enable
 	{
 		stars_enabled = Value & 1;
-	}        
-
-	return;	
+		return;
+	}
+	
+	if (Addr == 0x8100) // PPI0 - Port A
+	   return;
+        if (Addr == 0x8101) // PPI0 - Port B
+	   return;
+        if (Addr == 0x8102) // PPI0 - Port C
+	   return;
+        if (Addr == 0x8103) // PPI0 - Control
+           return;
+        if (Addr ==  0x8203) // Control Register
+           return;	
+	
+	if (Addr == 0x8200)     // PPI1 - Port A goes to AY
+        {
+           sound_latch = Value;
+           return;
+	}	
+	
+        if (Addr == 0x8201) // PPI1 - Port B
+        {
+           if((Value & 0x08) && !snd_irq_last)
+             snd_irq_state = Value;
+           snd_irq_last = Value & 0x08;      	
+           return;
+        }
+ }
+ else 
+ {
+    if (Addr >= CPU2_RAM_ADDR && Addr < CPU2_RAM_ADDR + CPU2_RAM_SIZE)
+    {
+      memory[CPU2_RAM_OFFSET + Addr - CPU2_RAM_ADDR] = Value;
+      return;
+    }
+    // this is memory mapped sound filters, not RAM
+    if (Addr >= CPU2_FILTER_ADDR && Addr < CPU2_FILTER_ADDR + CPU2_FILTER_SIZE)
+    {
+      return;
+    }
+  }
 
 	// initial stack is at 0xf000 (0x6000 with a15 ignored), so catch that
 	//if((Addr & 0xfffe) == 0x6ffe)
 	//  return;
 }
 
-static inline void scramble_OutZ80(unsigned short Port, unsigned char Value) {
-	irq_ptr = Value;
-}
-
-
 static inline void scramble_run_frame(void) {
 		
 	
-	
+	#if 0
 	for (int i = 0; i < INST_PER_FRAME_SCRAMBLE; i++) {
 		StepZ80(cpu); StepZ80(cpu); StepZ80(cpu); StepZ80(cpu);
 	}
+	#endif
+	for (int i = 0; i < INST_PER_FRAME_SCRAMBLE; i++) {
+	    current_cpu=0; StepZ80(&cpu[0]); StepZ80(&cpu[0]); StepZ80(&cpu[0]); StepZ80(&cpu[0]);
+            current_cpu=1; StepZ80(&cpu[1]); scramble_snd_icnt++; StepZ80(&cpu[1]); scramble_snd_icnt++;
+	    
+	    // "latch" IRQ: only deliver when sound CPU has interrupts enabled (EI)
+            // Same pattern as Frogger — prevents lost IRQs during DI periods
+            if((snd_irq_state & 0x08) && (cpu[1].IFF & IFF_1)) {
+              IntZ80(&cpu[1], INT_RST38);
+              snd_irq_state = 0; //&= ~0x08;
+            }
+	}    
     
 	if (irq_enable[0])
 	{
-
-	    IntZ80(cpu,INT_NMI );
+            current_cpu = 0;
+	    IntZ80(&cpu[0],INT_NMI );
 	}  
 		
 }
@@ -318,11 +494,6 @@ static inline void scramble_run_frame(void) {
 #include "scramble_tilemap.h"
 #include "scramble_spritemap.h"
 #include "scramble_cmap.h"
-#ifdef SOUND // TODO 
-#include "scramble_wavetable.h"
-#endif
-
-#define USE_NAMCO_WAVETABLE
 
 #define CHUNKSIZE (8)
 
