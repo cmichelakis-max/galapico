@@ -128,7 +128,7 @@ unsigned short dkong_sample_cnt[3] = { 0,0,0 };
 const signed char *dkong_sample_ptr[3];
 #endif
 
-#if defined(ENABLE_FROGGER) || defined(ENABLE_1942)
+#if defined(ENABLE_FROGGER) || defined(ENABLE_1942) || defined(ENABLE_SCRAMBLE)
 int ay_period[2][4] = {{0,0,0,0}, {0,0,0,0}};
 int ay_volume[2][3] = {{0,0,0}, {0,0,0}};
 int ay_enable[2][3] = {{0,0,0}, {0,0,0}};
@@ -219,6 +219,7 @@ unsigned short *logos[] = {
 };
 #endif
 
+#define SOUND // Turning it on now
 
 // render one of 36 tile rows (8 x 224 pixel lines)
 void galapico_render_frame()
@@ -374,32 +375,42 @@ static unsigned char* snd_buffer;  // buffer space for a single channel
 #endif
 
 void snd_render_buffer(void) {
-#if defined(ENABLE_FROGGER) || defined(ENABLE_1942)
-  #ifndef ENABLE_1942        // only frogger
-    #define AY        1      // frogger has one AY
+#if defined(ENABLE_FROGGER) || defined(ENABLE_1942) || defined(ENABLE_SCRAMBLE) 
+  #if defined (ENABLE_SCRAMBLE)   &&  !defined(ENABLE_1942) && !defined(ENABLE_FROGGER)     // only scramble
+    #define AY        2      // scramble has two AYs
     #define AY_INC    9      // and it runs at 1.78 MHz -> 223718/24000 = 9,32
-    #define AY_VOL   11      // min/max = -/+ 3*15*11 = -/+ 495
+    #define AY_VOL    11      // min/max = -/+ 3*15*11 = -/+ 495
   #else
-    #ifndef ENABLE_FROGGER   // only 1942  
-      #define AY      2      // 1942 has two AYs
-      #define AY_INC  8      // and they runs at 1.5 MHz -> 187500/24000 = 7,81
-      #define AY_VOL 10      // min/max = -/+ 6*15*11 = -/+ 990
-    #else
-      // both enabled
-      #define AY ((machine == MCH_FROGGER)?1:2)
-      #define AY_INC ((machine == MCH_FROGGER)?9:8)
-      #define AY_VOL ((machine == MCH_FROGGER)?11:10)
-    #endif
-  #endif
+     #ifndef ENABLE_FROGGER   // only 1942  
+        #define AY      2      // 1942 has two AYs
+        #define AY_INC  8      // and they runs at 1.5 MHz -> 187500/24000 = 7,81
+        #define AY_VOL 10      // min/max = -/+ 6*15*11 = -/+ 990  
+     #else
+        #ifndef ENABLE_1942    // only frogger
+           #define AY      1      // frogger has one AY
+           #define AY_INC  9      // and they runs at 1.5 MHz -> 187500/24000 = 7,81
+           #define AY_VOL 11      // min/max = -/+ 6*15*11 = -/+ 990                                  
+        #else
+              // both enabled
+              #define AY ((machine == MCH_FROGGER)?1:2)
+              #define AY_INC ((machine == MCH_FROGGER)?9:8)
+              #define AY_VOL ((machine == MCH_FROGGER)?11:10)
+        #endif
+     #endif
+  #endif  
   
   if(
-#ifdef ENABLE_FROGGER
+  #ifdef ENABLE_FROGGER
      MACHINE_IS_FROGGER ||
-#endif
-#ifdef ENABLE_1942
-     MACHINE_IS_1942 ||
-#endif
-     0) {
+  #endif
+  #ifdef ENABLE_1942
+      MACHINE_IS_1942 ||  
+  #endif
+  #ifdef ENABLE_SCRAMBLE
+     MACHINE_IS_SCRAMBLE || 
+  #endif
+      0) {
+      
 
     // up to two AY's
     for(char ay=0;ay<AY;ay++) {
@@ -493,15 +504,19 @@ void snd_render_buffer(void) {
               DKONG_END
 #endif
 
-#if defined(ENABLE_FROGGER) || defined(ENABLE_1942)
+#if defined(ENABLE_FROGGER) || defined(ENABLE_1942) || defined(ENABLE_SCRAMBLE)
               if (
-#ifdef ENABLE_FROGGER
+   #ifdef ENABLE_FROGGER
                   MACHINE_IS_FROGGER ||
-#endif
-#ifdef ENABLE_1942
+   #endif
+   #ifdef ENABLE_1942
                   MACHINE_IS_1942 ||
-#endif
-                  0) {
+   #endif
+   #ifdef ENABLE_SCRAMBLE
+                  MACHINE_IS_SCRAMBLE ||
+   #endif
+                  0)
+              {
                   v = 0;  // silence
 
                   for (char ay = 0; ay < AY; ay++) {
@@ -731,8 +746,10 @@ void galapico_render_audio_video(void)
 {
   
     galapico_render_frame();
-#ifdef SOUND    // TODO IMPLEMENT SOUND
+#ifdef SOUND    // IMPLEMENT SOUND
+#if 0
     audio_namco_waveregs_parse();
+#endif    
     snd_render_buffer();
     snd_render_buffer();
     snd_render_buffer();
@@ -840,7 +857,7 @@ void core1_main()
     // initialized to dkongs 11765hz)
 
     // Boot audio from this core (so interrups go to it)
-#ifdef  CMICH // TODO IMPLEMENT SOUND  
+#ifdef  SOUND // IMPLEMENT SOUND
     hal_pwm_audio_init();
 
 #endif
@@ -901,7 +918,7 @@ int main()
 
     prepare_emulation();   
 
-#ifdef SOUND // TODO IMPLEMENT SOUND 
+#ifdef SOUND // IMPLEMENT SOUND 
     // Emulator code first
     audio_init();
 #endif

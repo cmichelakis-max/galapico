@@ -7,10 +7,9 @@ See here for the Galagino emulator: https://github.com/harbaum/galagino
 
 Issues :
 1. Graphics issues
-2. Scroll not working 
-3. Sound not implemented (2nd Z80 CPU)
-4. No stars in background
-5. DIP switches need addressing
+2. Scroll not working
+3. No stars in background
+4. DIP switches need addressing
 
 This is a SINGLE MACHINE build
 
