@@ -6,12 +6,14 @@ That is a port of the excellent Galagino ESP32 emulator to the Pi Pico 2, with 1
 See here for the Galagino emulator: https://github.com/harbaum/galagino
 
 Issues :
-1. Graphics issues
-2. Scroll not working
-3. Stars not blinking in background
-4. DIP switches need addressing
+1. Graphics and colour issues.
+2. Stars not blinking in background.
+3. DIP switches need addressing.
 
-This is a SINGLE MACHINE build
+This is a SINGLE MACHINE build.
+MULTIPLE machine build could have issues.
+Not tested for all combinations of machines.
+Build not tested on Windows machines.
 
 Instructions :
 #Tested on raspberry pi 5 running Linux  Trixie
