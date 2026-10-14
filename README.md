@@ -1,4 +1,5 @@
 # Adding Scramble game to Galapico - Pi Pico 2 Arcade Emulator
+![Scramble screenshot](scramble.jpg)
 
 This is a fork of https://github.com/Beaumotplage/galapico Pi Pico 2 Arcade Emulator
 
